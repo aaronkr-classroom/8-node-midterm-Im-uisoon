@@ -2,11 +2,14 @@
 // Capstone 2: Express
 "use strict";
 
-const express = require('express'), // express를 요청
-    layouts = require('express-ejs-layouts'), // express-ejs-layout의 요청
-    homeController = require('./controllers/homeController'),
-    errorController = require('./controllers/errorController'),
-    app = express(); // express 애플리케이션의 인스턴스화
+const express = require('express'); // express를 요청
+const layouts = require('express-ejs-layouts'); // express-ejs-layout의 요청
+const homeController = require('./controllers/homeController');
+const errorController = require('./controllers/errorController');
+const mongoose = require('mongoose'); // mongoose를 요청
+const subscribersController = require('./controllers/subscribersController');
+
+const app = express(); // express 애플리케이션의 인스턴스화
 
 app.set("port", process.env.PORT || 3000);
 
@@ -44,6 +47,18 @@ app.post('/contact', homeController.postedSignUp); // 연락처 제출 양식을
  */
 app.use(errorController.resNotFound); // 미들웨어 함수로 에러 처리 추가
 app.use(errorController.resInternalError);
+
+// MongoDB 연결과 Mongoose 설정
+const mongoURI = "mongodb://localhost:27017/myDatabase";
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error(err));
+
+// 새로운 라우트
+app.get('/subscribers', subscribersController.getAllSubscribers);
+app.get('/contact', subscribersController.getSubscriptionPage);
+app.post('/subscribe', subscribersController.saveSubscriber);
 
 app.listen(app.get("port"), () => { // 3000번 포트로 리스닝 설정
     console.log(`Server running at http://localhost:${app.get("port")}`);
